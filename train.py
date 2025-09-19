@@ -59,7 +59,7 @@ def train(model, optimizer, trainset, train_loader, testset, test_loader, device
         out_dict['test_acc'].append(test_correct / len(testset))
         out_dict['train_loss'].append(np.mean(train_loss))
         out_dict['test_loss'].append(np.mean(test_loss))
-        print(f"\nLoss train: {np.mean(train_loss):.3f}\t test: {np.mean(test_loss):.3f}\t",
+        tqdm.write(f"{epoch + 1}\t Loss train: {np.mean(train_loss):.3f}\t test: {np.mean(test_loss):.3f}\t "
               f"Accuracy train: {out_dict['train_acc'][-1] * 100:.1f}%\t test: {out_dict['test_acc'][-1] * 100:.1f}%")
     return out_dict
 
@@ -72,7 +72,6 @@ def plot_training(training_dict: dict):
         ax.xaxis.set_major_locator(MultipleLocator(1))
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    print(type(ax1))
     fig.set_figwidth(14)
     x = range(1, len(training_dict['train_acc']) + 1)
 
