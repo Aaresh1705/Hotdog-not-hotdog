@@ -13,7 +13,7 @@ def get_vgg16_model(pretrained: bool=False, custom_weights: str='') -> nn.Module
     """
 
     def get_model(weights) -> nn.Module:
-        model = vgg16(pretrained=weights)
+        model = vgg16(weights=weights)
         # print(model.classifier)
         model.classifier[6] = nn.Linear(in_features=4096, out_features=2)
 
@@ -23,22 +23,21 @@ def get_vgg16_model(pretrained: bool=False, custom_weights: str='') -> nn.Module
         return model
 
     if pretrained:
-        model = get_model(weights=VGG16_Weights)
+        model = get_model(weights=VGG16_Weights.DEFAULT)
 
         for param in model.features.parameters():
             param.requires_grad = False
-
-        return model
-
     else:
         model = get_model(weights=None)
-        if custom_weights != '':
-            model.load_state_dict(torch.load(custom_weights, weights_only=True))
 
         for param in model.features.parameters():
             param.requires_grad = True
 
-        return model
+    if custom_weights != '':
+        model.load_state_dict(torch.load(custom_weights, weights_only=True))
+        print('Loaded custom weights:', custom_weights)
+
+    return model
 
 
 def get_custom_model():
