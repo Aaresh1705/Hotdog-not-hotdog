@@ -45,6 +45,10 @@ def get_custom_model():
     class Network(nn.Module):
         def __init__(self):
             super(Network, self).__init__()
+            # Using softmax in the last layer gave me unstable results
+            # I think this is because the probabilistic got rounden down to 0
+            # Which means that when you take the log of 0 you approach -inf
+            # Instead just output the raw logistics, so don't use softmax in the end
 
         def forward(self, x):
             ...
