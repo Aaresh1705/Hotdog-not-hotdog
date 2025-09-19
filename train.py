@@ -1,6 +1,7 @@
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator, MaxNLocator
 from tqdm import tqdm
 
 import torch
@@ -26,7 +27,7 @@ def train(model, optimizer, trainset, train_loader, testset, test_loader, device
         # For each epoch
         train_correct = 0
         train_loss = []
-        for minibatch_no, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader), leave=False):
+        for minibatch_no, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader), leave=False, desc='Training'):
             data, target = data.to(device), target.to(device)
             # Zero the gradients computed for each weight
             optimizer.zero_grad()
@@ -47,7 +48,7 @@ def train(model, optimizer, trainset, train_loader, testset, test_loader, device
         test_loss = []
         test_correct = 0
         model.eval()
-        for data, target in test_loader:
+        for data, target in tqdm(test_loader, total=len(test_loader), leave=False, desc='Testing'):
             data, target = data.to(device), target.to(device)
             with torch.no_grad():
                 output = model(data)
@@ -58,29 +59,39 @@ def train(model, optimizer, trainset, train_loader, testset, test_loader, device
         out_dict['test_acc'].append(test_correct / len(testset))
         out_dict['train_loss'].append(np.mean(train_loss))
         out_dict['test_loss'].append(np.mean(test_loss))
-        print(f"Loss train: {np.mean(train_loss):.3f}\t test: {np.mean(test_loss):.3f}\t",
+        print(f"\nLoss train: {np.mean(train_loss):.3f}\t test: {np.mean(test_loss):.3f}\t",
               f"Accuracy train: {out_dict['train_acc'][-1] * 100:.1f}%\t test: {out_dict['test_acc'][-1] * 100:.1f}%")
     return out_dict
 
 def plot_training(training_dict: dict):
+    def default_plot(ax: plt.Axes):
+        ax.legend()
+        ax.grid(linestyle='--')
+        ax.spines[['right', 'top']].set_visible(False)
+        # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.xaxis.set_major_locator(MultipleLocator(1))
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
+    print(type(ax1))
     fig.set_figwidth(14)
-    x = range(len(training_dict['train_acc']))
+    x = range(1, len(training_dict['train_acc']) + 1)
 
     ax1.set_title('Accuracy')
     ax1.set_xlabel('Epoch')
     ax1.set_ylabel('Accuracy')
     ax1.plot(x, training_dict['train_acc'], label='Train')
     ax1.plot(x, training_dict['test_acc'], label='Test')
-    ax1.legend()
+    default_plot(ax1)
+
 
     ax2.set_title('Loss')
-    ax1.set_xlabel('Epoch')
-    ax1.set_ylabel('Loss')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Loss')
     ax2.plot(x, training_dict['train_loss'], label='Train')
     ax2.plot(x, training_dict['test_loss'], label='Test')
-    ax2.legend()
+    default_plot(ax2)
 
+    fig.tight_layout()
     plt.show()
 
 def save_model(model):
@@ -109,7 +120,7 @@ if __name__ == '__main__':
         print("The code will run on CPU.")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model = get_vgg16_model(pretrained=False, custom_weights='models/vgg16.pth')
+    model = get_vgg16_model(pretrained=True)
     model.to(device)
 
     transforms = [transforms.RandomRotation(30), transforms.RandomVerticalFlip(0.25), transforms.RandomHorizontalFlip(0.25)]
