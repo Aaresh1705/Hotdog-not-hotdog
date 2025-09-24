@@ -90,7 +90,12 @@ def plot_training(training_dict: dict):
     ax2.plot(x, training_dict['test_loss'], label='Test')
     default_plot(ax2)
 
+    fig.suptitle('Training results with Adam without data augmentations')
     fig.tight_layout()
+
+    name = 'figures/test'
+    plt.savefig(name + '.pdf')
+    plt.savefig(name + '.png')
     plt.show()
 
 def save_model(model):
